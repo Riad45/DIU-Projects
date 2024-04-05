@@ -1,0 +1,155 @@
+#include <Servo.h>
+#include <AFMotor.h> // Include the AFMotor library
+
+AF_DCMotor FR(1);  // Front right motor
+AF_DCMotor FL(2);  // Front left motor
+AF_DCMotor BL(3);  // Back left motor
+AF_DCMotor BR(4);  // Back right motor
+Servo myservo;
+
+int pos = 0;
+boolean fire = false;
+
+/*-------defining Inputs as Analog Pins used as Digital Pins------*/
+#define Left_S A0     // left sensor (Analog pin A0)
+#define Forward_S A1  // forward sensor (Analog pin A1)
+#define Right_S A3    // right sensor (Analog pin A3)
+
+/*-------defining Outputs------*/
+#define pump A4
+
+void setup()
+{
+  pinMode(Left_S, INPUT);
+  pinMode(Right_S, INPUT);
+  pinMode(Forward_S, INPUT);
+  pinMode(pump, OUTPUT);
+  myservo.attach(10);
+  myservo.write(90);
+}
+
+void put_off_fire()
+{
+  /* delay(800);
+
+  FL.setSpeed(200);
+  BL.setSpeed(200);
+  FR.setSpeed(200);
+  BR.setSpeed(200); */
+
+  FL.run(RELEASE);
+  BL.run(RELEASE);
+  FR.run(RELEASE);
+  BR.run(RELEASE);
+
+  digitalWrite(pump, HIGH);
+  delay(200);
+
+  for (pos = 50; pos <= 130; pos += 1)
+  {
+    myservo.write(pos);
+    delay(10);
+  }
+  for (pos = 130; pos >= 50; pos -= 1)
+  {
+    myservo.write(pos);
+    delay(10);
+  }
+
+  digitalWrite(pump, LOW);
+  myservo.write(90);
+
+ // fire = false;
+}
+
+void loop()
+{
+  myservo.write(90); //Sweep_Servo();  
+
+  if (digitalRead(Left_S) == LOW && digitalRead(Right_S) == LOW && digitalRead(Forward_S) == LOW)
+  {
+    // If Fire not detected all sensors are LOW, do not move the robot
+    FL.setSpeed(0);
+    BL.setSpeed(0);
+    FR.setSpeed(0);
+    BR.setSpeed(0);
+    FL.run(RELEASE);
+    BL.run(RELEASE);
+    FR.run(RELEASE);
+    BR.run(RELEASE);
+  }
+  else if (digitalRead(Forward_S) == HIGH)
+  {
+    // If Fire is straight ahead, move the robot forward
+    FL.setSpeed(200);
+    BL.setSpeed(200);
+    FR.setSpeed(200);
+    BR.setSpeed(200);
+    FL.run(FORWARD);
+    BL.run(FORWARD);
+    FR.run(FORWARD);
+    BR.run(FORWARD);
+
+    delay(800);
+
+    put_off_fire();
+
+
+    
+    //fire = true;
+  }
+  else if (digitalRead(Left_S) == HIGH)
+  {
+    // If Fire is to the left, move the robot left
+    FL.setSpeed(200);
+    BL.setSpeed(200);
+    FR.setSpeed(200);
+    BR.setSpeed(200);
+    FL.run(FORWARD);
+    BL.run(FORWARD);
+    FR.run(BACKWARD);
+    BR.run(BACKWARD);
+    delay(300);
+    FL.run(FORWARD);
+    BL.run(FORWARD);
+    FR.run(FORWARD);
+    BR.run(FORWARD);
+    //fire = true;
+
+    delay(600);
+
+    put_off_fire();
+  
+  }
+  else if (digitalRead(Right_S) == HIGH)
+  {
+    // If Fire is to the right, move the robot right
+    FL.setSpeed(200);
+    BL.setSpeed(200);
+    FR.setSpeed(200);
+    BR.setSpeed(200);
+    FL.run(BACKWARD);
+    BL.run(BACKWARD);
+    FR.run(FORWARD);
+    BR.run(FORWARD);
+    delay(300);
+    FL.run(FORWARD);
+    BL.run(FORWARD);
+    FR.run(FORWARD);
+    BR.run(FORWARD);
+    //fire = true;
+
+    delay(600);
+
+    put_off_fire();
+  }
+
+  }
+
+ /* delay(300); // Slow down the speed of the robot
+
+  while (fire == true)
+  {
+    put_off_fire();
+  }
+}*/
